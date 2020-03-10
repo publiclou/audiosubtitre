@@ -6,7 +6,11 @@ module.exports = class file {
         return fs.readFileSync(file).toString('base64')
     }
     deleteFile(file) {
-        return fs.unlinkSync(file)
+        fs.exists(file, function (exists) {
+            if (exists) {
+                fs.unlinkSync(file)
+            }
+        })
     }
     convertToAudioFormat(input, output, channel, format) {
         return new Promise((resolve, reject) => {
