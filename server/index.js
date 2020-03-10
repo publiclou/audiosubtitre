@@ -26,12 +26,6 @@ let audioController = new AudioController()
 app.get('/', function (req, res) {
     res.sendFile(`${app_root}/client/index.html`);
 });
-app.post('/b', upload.single('audio'), function (req, res) {
-    console.log(req.body)
-    res.send('bb')
-    res.end()
-})
-
 app.post('/longaudio', upload.single('audio'), audioController.longReconize)
 
 app.listen(3000, function () {
