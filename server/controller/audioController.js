@@ -1,29 +1,35 @@
-var ffmpeg = require('fluent-ffmpeg');
-
-const audioConvert = require('../module/speechtotext');
-const File = require('../module/file');
+const speechtotext = require('../module/speechtotext');
+const file = require('../module/file');
 
 module.exports = class audioController {
     constructor() {
     }
-    async convert(req, res, next) {
-        // get file
-        let file = new File()
-        let file_path = req.file.path;
-        let output_path = `${req.file.destination}${req.file.originalname.split('.')[0]}.flac`
+    async longReconize(req, res, next) {
+        const File = new file()
+        const SpeechToText = new speechtotext()
+        const file_path = req.file.path
+        const output_path = `${req.file.destination}${req.file.originalname.split('.')[0]}.opus`
 
-        await file.convertToFLAC(file_path, output_path, 1)
+        // convert file
+        await File.convertToAudioFormat(file_path, output_path, 1, 'opus')
+        let file_content = File.toBase64(output_path)
 
-        let file_content = file.toBase64(output_path)
-        let config = {
-            encoding: 'FLAC',
-            languageCode: 'en-US',
+        // setting speech to text require
+        let request = {
+            config: {
+                encoding: 'OGG_OPUS',
+                sampleRateHertz: 48000,
+                languageCode: req.body.lang,
+            },
+            audio: {
+                content: file_content
+            }
         }
-        let result = await audioConvert(config, file_content)
+        let result = await SpeechToText.longReconize(request)
 
         // delete files
-        file.deleteFile(file_path)
-        file.deleteFile(output_path)
+        File.deleteFile(file_path)
+        File.deleteFile(output_path)
 
         res.send(result)
         res.end()
