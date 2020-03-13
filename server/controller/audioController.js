@@ -20,6 +20,7 @@ module.exports = class audioController {
                 encoding: 'OGG_OPUS',
                 sampleRateHertz: 48000,
                 languageCode: req.body.lang,
+                enableAutomaticPunctuation: true,
             },
             audio: {
                 content: file_content
