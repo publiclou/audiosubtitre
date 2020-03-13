@@ -5,33 +5,136 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+
     <title>Audio to text</title>
 </head>
 
+<style>
+    .container {
+        width: 100%;
+        height: 100%;
+    }
+
+    .inline-flex {
+        display: inline-flex;
+    }
+
+    .flex-column {
+        flex-direction: column;
+    }
+
+    .c-vertical-center,
+    .horizontal-center {
+        justify-content: center;
+    }
+
+    .c-horizontal-center,
+    .vertical-center {
+        align-items: center;
+    }
+
+    .btn {
+        border-radius: 10px;
+        cursor: pointer;
+    }
+
+    .file-box {
+        width: 500px;
+        height: 40px;
+        margin: 200px 0 20px 0;
+        box-sizing: border-box;
+        padding: 0 20px 0 20px;
+        background-color: rgb(141, 142, 143);
+        color: rgb(212, 211, 211);
+        border: 1px solid rgb(134, 138, 139);
+    }
+
+    .submit {
+        width: 100px;
+        height: 30px;
+        color: rgb(240, 238, 238);
+        border: 1px solid rgb(62, 138, 238);
+        background-color: rgb(76, 146, 238);
+    }
+
+    #spinner {
+        display: none;
+    }
+
+    #result {
+        width: 500px;
+        margin-top: 20px;
+    }
+</style>
+
 <body>
-    <form id="audio">
-        <input type="file" name="file" id="file">
-        <div id="submit">Convert</div>
-    </form>
+    <div class="container inline-flex flex-column c-horizontal-center c-vertical-center">
+        <form class="inline-flex flex-column c-horizontal-center">
+            <label for="file">
+                <div class="btn file-box inline-flex vertical-center" id="file-label">Plsase select a audio file</div>
+                <input type="file" name="file" id="file" style="display: none;" accept="audio/*">
+            </label>
+            <div class="btn submit inline-flex horizontal-center vertical-center" id="submit">Convert</div>
+            <i class="fas fa-spinner fa-spin" id="spinner"></i>
+        </form>
+
+        <div id="result">
+
+        </div>
+    </div>
 </body>
 
 <script>
-    let file = document.getElementById('file')
     let submit = document.getElementById('submit')
-    let form = new FormData();
+    let form = new FormData()
     form.append('lang', 'en-US')
 
-    file.addEventListener('change', function (e) {
-        form.append('audio', e.target.files[0])
+    $('#file').on('change', function (e) {
+        form.set('audio', e.target.files[0])
+        $('#file-label').html(e.target.files[0].name)
+        $('#file-label').css('color', '#000000')
     })
 
-    submit.addEventListener('click', function (e) {
-        axios.post('/longaudio', form).then((res) => {
-            console.log(res)
-        }).catch((err) => {
-            console.log(err)
-        })
+    $('#submit').on('click', function (e) {
+        $('#submit').hide()
+        $('#spinner').show()
+
+        $.ajax({
+            url: '/longaudio',
+            data: form,
+            processData: false,
+            contentType: false,
+            type: 'POST',
+            success: function (result) {
+                $('#submit').show()
+                $('#spinner').hide()
+                let text = result.map(function (d) {
+                    return d.alternatives[0].transcript
+                }).join('<br/>')
+                $('#result').html(text)
+            },
+            fail: function () {
+                $('#submit').show()
+                $('#spinner').hide()
+                $('#result').html("error")
+            }
+        });
     })
+
+
+    // submit.addEventListener('click', function (e) {
+    //     axios.post('/longaudio', form).then((res) => {
+    //         let data = res.data;
+    //         // let result = res.data.reduce((c,n)=>{
+    //         //     console.
+    //         // })
+    //         console.log(data)
+    //     }).catch((err) => {
+    //         console.log(err)
+    //     })
+    // })
 </script>
 
 </html>
